@@ -5,7 +5,7 @@
 <title>Fire TV — Live channels</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.18/dist/hls.min.js"></script>
 <style>
-:root{color-scheme:dark;--bg:#000;--p:#111;--p2:#1b1b1b;--l:#2a2a2a;--t:#fff;--m:#8d8d8d;--th:calc(52px + env(safe-area-inset-top,0px))}
+:root{color-scheme:dark;--bg:#000;--p:#111;--p2:#1b1b1b;--l:#2a2a2a;--t:#fff;--m:#a6a6a6;--th:calc(52px + env(safe-area-inset-top,0px))}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--t);font:15px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
 button,input,select{font:inherit;color:inherit}
@@ -18,8 +18,17 @@ button{cursor:pointer;background:none;border:0;touch-action:manipulation;-webkit
 .ib:hover{background:var(--p2)}.ib:active{transform:scale(.95)}
 .app{max-width:1400px;margin:auto}
 .dock{position:sticky;top:var(--th);z-index:50;background:var(--bg);padding:10px 12px 6px;border-bottom:1px solid var(--l)}
-.frame{position:relative;aspect-ratio:16/9;max-height:42vh;margin:auto;background:#000;border:1px solid var(--l);border-radius:12px;overflow:hidden;cursor:pointer}
-video{width:100%;height:100%;object-fit:contain;display:block;background:#000}
+.frame{touch-action:pan-y;position:relative;aspect-ratio:16/9;max-height:42vh;margin:auto;background:#000;border:1px solid var(--l);border-radius:12px;overflow:hidden;cursor:pointer}
+video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
+.ctl{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;gap:18px;background:linear-gradient(#0008,#0002 40%,#0008);opacity:0;pointer-events:none;transition:opacity .2s}
+.frame.show .ctl{opacity:1;pointer-events:auto}
+.cb{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#0009;color:#fff}
+.cb svg{width:22px;height:22px;fill:#fff}
+.cb.lg{width:60px;height:60px}.cb.lg svg{width:30px;height:30px}
+.cb:hover{background:#000c}
+.ctl .ex{position:absolute;right:8px;bottom:8px;display:flex;gap:8px}
+.spin,.badge{z-index:6;pointer-events:none}
+.frame:fullscreen,.frame:-webkit-full-screen{border:0;border-radius:0;max-height:none}
 .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:16px;background:var(--p2)}
 .ph span{font-size:12px;color:var(--m)}
 .big{width:52px;height:52px;border:2px solid #fff;border-radius:14px;display:grid;place-items:center;font-size:22px}
@@ -30,7 +39,7 @@ video{width:100%;height:100%;object-fit:contain;display:block;background:#000}
 .bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:8px}
 .np{min-width:0}.np b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .np span{font-size:12px;color:var(--m)}
-.ctl{display:flex;gap:6px;flex:none}
+
 .sub{display:flex;gap:8px;padding-top:6px;min-height:6px}
 .chip{padding:5px 12px;border:1px solid var(--l);border-radius:99px;font-size:13px;white-space:nowrap;background:var(--bg)}
 .lib{padding:10px 12px 90px}
@@ -60,6 +69,11 @@ select{flex:1;min-width:0;height:40px;padding:0 10px;border-radius:12px;border:1
 .empty .chip{margin-top:12px;color:#fff}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#fff;color:#000;padding:10px 16px;border-radius:99px;font-size:13px;font-weight:600;transition:.25s;z-index:99;max-width:90vw}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+@media(orientation:landscape) and (max-height:600px){:root{--th:calc(44px + env(safe-area-inset-top,0px))}
+.app{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);align-items:start;max-width:none}
+.dock{border-bottom:0;padding:8px 8px 8px calc(8px + env(safe-area-inset-left,0px))}
+.frame{max-height:calc(100vh - var(--th) - 62px);max-height:calc(100dvh - var(--th) - 62px)}
+.lib{padding:8px calc(12px + env(safe-area-inset-right,0px)) 40px 12px;border-left:1px solid var(--l)}}
 @media(min-width:900px){.app{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(360px,1fr);align-items:start}
 .dock{border-bottom:0;padding:16px}.frame{max-height:none}.lib{padding:16px 16px 40px;border-left:1px solid var(--l)}}
 </style></head>
@@ -67,18 +81,19 @@ select{flex:1;min-width:0;height:40px;padding:0 10px;border-radius:12px;border:1
 <header class="top"><span class="brand">Fire TV</span><span id="stat">Loading…</span><button class="ib" id="refresh" title="Refresh channels" aria-label="Refresh">↻</button></header>
 <div class="app">
 <section class="dock">
- <div class="frame" id="frame"><video id="v" playsinline></video>
+ <div class="frame" id="frame" role="group" tabindex="0" aria-label="Video player"><video id="v" playsinline></video>
   <div class="ph" id="ph"><div class="big">▶</div><b id="phT">Pick a channel</b><span id="phS">Browse the list to start watching</span></div>
-  <div class="spin" id="spin"></div><div class="badge" id="badge"></div></div>
+  <div class="spin" id="spin"></div><div class="badge" id="badge"></div>
+ <div class="ctl" id="ctl"><button class="cb" id="pv" aria-label="Previous"></button><button class="cb lg" id="pp" aria-label="Play/Pause"></button><button class="cb" id="nx" aria-label="Next"></button><div class="ex"><button class="cb" id="mu" aria-label="Mute"></button><button class="cb" id="pip" aria-label="Picture in picture"></button><button class="cb" id="fs" aria-label="Fullscreen"></button></div></div></div>
  <div class="bar"><div class="np"><b id="nt">Nothing playing</b><span id="nm">&nbsp;</span></div>
-  <div class="ctl"><button class="ib" id="pv" aria-label="Previous">⏮</button><button class="ib" id="pp" aria-label="Play/Pause">▶</button><button class="ib" id="nx" aria-label="Next">⏭</button><button class="ib" id="mu" aria-label="Mute">🔊</button><button class="ib" id="pip" aria-label="Picture in picture">⧉</button><button class="ib" id="fs" aria-label="Fullscreen">⛶</button></div></div>
+  </div>
  <div class="sub"><button class="chip" id="alt" hidden></button><button class="chip" id="fv" hidden>☆ Save</button></div>
 </section>
 <section class="lib">
  <input id="q" type="search" placeholder="Search channels, countries, genres" autocomplete="off" aria-label="Search">
  <div class="chips" id="chips"></div>
  <div class="tabs" id="tabs"><button data-t="all" class="on">All</button><button data-t="fav">Saved <i id="fc"></i></button><button data-t="rec">Recent</button></div>
- <div class="fl"><select id="cc" aria-label="Country"></select><select id="so" aria-label="Sort"><option value="az">A–Z</option><option value="hd">Best quality</option></select></div>
+ <div class="fl"><select id="cc" aria-label="Country"></select><select id="so" aria-label="Sort"><option value="az">A–Z</option><option value="hd">Best quality</option></select><button class="chip" id="ad" aria-pressed="false" style="flex:none"></button></div>
  <div class="rc"><span id="rc"></span><button id="rs" hidden>Reset filters</button></div>
  <div id="list"></div><div id="sent" style="height:1px"></div><div class="empty" id="empty" hidden></div>
 </section></div>
@@ -96,16 +111,16 @@ const ini=n=>n.split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase();
 const rn=new Intl.DisplayNames(["en"],{type:"region"});
 const cname=c=>{if(!c)return"International";try{return rn.of(c==="UK"?"GB":c)||c}catch{return c}};
 const flag=c=>c?String.fromCodePoint(...[...(c==="UK"?"GB":c)].map(x=>127397+x.charCodeAt())):"🌐";
-const S={all:[],view:[],map:new Map(),cur:null,si:0,tab:"all",cat:"",cc:"",so:"az",n:0,g:0,native:false};
+const S={all:[],view:[],map:new Map(),cur:null,si:0,tab:"all",cat:"",cc:"",so:"az",adult:false,n:0,g:0,native:false};
 const saved=ls.get("f",null);if(saved)Object.assign(S,saved);
 const favs=new Set(ls.get("fav",[]));let rec=ls.get("rec",[]),hls=null,wd,tt;
 const toast=m=>{const e=$("toast");e.textContent=m;e.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>e.classList.remove("show"),2400)};
-const persist=()=>ls.set("f",{tab:S.tab,cat:S.cat,cc:S.cc,so:S.so});
+const persist=()=>ls.set("f",{tab:S.tab,cat:S.cat,cc:S.cc,so:S.so,adult:S.adult});
 
 // ---------- parsing ----------
 const at=(l,k)=>(new RegExp(k+'="([^"]*)"','i').exec(l)||[])[1]||"";
-function parse(txt){const out=[];let m=null;
- for(const raw of txt.split(/\r?\n/)){const l=raw.trim();if(!l)continue;
+async function parse(txt){const out=[];let m=null,n=0;
+ for(const raw of txt.split(/\r?\n/)){if(++n%20000===0)await new Promise(r=>setTimeout(r));const l=raw.trim();if(!l)continue;
   if(l.startsWith("#EXTINF")){const i=l.lastIndexOf(",");m={id:at(l,"tvg-id"),logo:at(l,"tvg-logo"),cat:at(l,"group-title"),t:i>=0?l.slice(i+1).trim():"",bad:false}}
   else if(m&&/^#EXTVLCOPT:http-(referrer|user-agent)/i.test(l))m.bad=true; // needs custom headers; browsers can't send them
   else if(l[0]!=="#"&&m){if(!m.bad&&/^https?:/i.test(l)&&!(blockHttp&&/^http:/i.test(l)))out.push({...m,u:l});m=null}}
@@ -124,11 +139,11 @@ function build(items){const map=new Map();
 
 // ---------- list ----------
 function row(c){const f=favs.has(c.k),on=S.cur&&S.cur.k===c.k;
- return `<div class="row${on?" on":""}" data-k="${esc(c.k)}"><div class="lg"><span>${esc(ini(c.name))}</span>${c.logo?`<img loading="lazy" src="${esc(c.logo)}" alt="" onerror="this.remove()">`:""}</div><div class="ci"><b>${esc(c.name)}</b><div class="cd"><span>${flag(c.cc)} ${esc(c.cn)}</span><span class="pill">${esc(c.cats[0])}</span>${c.q?`<span class="pill">${c.q}p</span>`:""}${c.s.length>1?`<span>×${c.s.length}</span>`:""}</div></div><button class="fv${f?" on":""}" data-f="${esc(c.k)}" aria-label="${f?"Remove from":"Add to"} saved">${f?"★":"☆"}</button></div>`}
+ return `<div class="row${on?" on":""}" data-k="${esc(c.k)}" role="button" tabindex="0"><div class="lg"><span>${esc(ini(c.name))}</span>${c.logo?`<img loading="lazy" src="${esc(c.logo)}" alt="" onerror="this.remove()">`:""}</div><div class="ci"><b>${esc(c.name)}</b><div class="cd"><span>${flag(c.cc)} ${esc(c.cn)}</span><span class="pill">${esc(c.cats[0])}</span>${c.q?`<span class="pill">${c.q}p</span>`:""}${c.s.length>1?`<span>×${c.s.length}</span>`:""}</div></div><button class="fv${f?" on":""}" data-f="${esc(c.k)}" aria-pressed="${f}" aria-label="Save ${esc(c.name)}">${f?"★":"☆"}</button></div>`}
 const io=new IntersectionObserver(e=>{if(e[0].isIntersecting)more()},{rootMargin:"600px"});
 function more(){if(S.n>=S.view.length)return;const a=S.view.slice(S.n,S.n+60);S.n+=a.length;$("list").insertAdjacentHTML("beforeend",a.map(row).join(""));io.unobserve($("sent"));io.observe($("sent"))}
 function apply(){const q=norm($("q").value);
- let a=S.all.filter(c=>!(S.tab==="fav"&&!favs.has(c.k))&&!(S.tab==="rec"&&!rec.includes(c.k))&&!(S.cat&&!c.cats.includes(S.cat))&&!(S.cc&&c.cc!==S.cc)&&!(q&&!c.n2.includes(q)));
+ let a=S.all.filter(c=>!(S.tab==="fav"&&!favs.has(c.k))&&!(S.tab==="rec"&&!rec.includes(c.k))&&!(S.cat&&!c.cats.includes(S.cat))&&!(S.cc&&c.cc!==S.cc)&&!(q&&!c.n2.includes(q))&&!(c.adult&&!S.adult));
  if(S.tab==="rec")a.sort((x,y)=>rec.indexOf(x.k)-rec.indexOf(y.k));
  else if(S.so==="hd")a.sort((x,y)=>y.q-x.q||x.name.localeCompare(y.name));
  else if(q)a.sort((x,y)=>(norm(y.name).startsWith(q)-norm(x.name).startsWith(q))||x.name.localeCompare(y.name));
@@ -138,18 +153,19 @@ function apply(){const q=norm($("q").value);
  const em=$("empty");em.hidden=!!a.length||!S.all.length;
  if(!a.length)em.innerHTML=S.tab==="fav"&&!favs.size?"<b>No saved channels yet</b>Tap ☆ on any channel to keep it here.":S.tab==="rec"&&!rec.length?"<b>Nothing watched yet</b>Channels you play will show up here.":`<b>No channels match</b>Try a different search or clear your filters.<br><button class="chip" id="rs2">Reset filters</button>`;
  $("fc").textContent=favs.size||"";persist()}
+const syncTabs=()=>{document.querySelectorAll("#tabs button").forEach(b=>{const on=b.dataset.t===S.tab;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});const a=$("ad");a.textContent=S.adult?"Adult: shown":"Adult: hidden";a.setAttribute("aria-pressed",S.adult);a.classList.toggle("on",S.adult)};
 function drawFilters(){const cats=new Map(),ccs=new Map();
- for(const c of S.all){for(const g of c.cats)cats.set(g,(cats.get(g)||0)+1);ccs.set(c.cc,(ccs.get(c.cc)||0)+1)}
- const top=[...cats].sort((a,b)=>b[1]-a[1]).slice(0,30);
- $("chips").innerHTML=`<button class="chip${S.cat?"":" on"}" data-c="">All</button>`+top.map(([g,n])=>`<button class="chip${S.cat===g?" on":""}" data-c="${esc(g)}">${esc(g)} · ${n}</button>`).join("");
+ for(const c of S.all){if(c.adult&&!S.adult)continue;for(const g of c.cats)cats.set(g,(cats.get(g)||0)+1);ccs.set(c.cc,(ccs.get(c.cc)||0)+1)}
+ if(S.cat&&!cats.has(S.cat))S.cat="";const top=[...cats].sort((a,b)=>b[1]-a[1]).slice(0,30);
+ $("chips").innerHTML=`<button class="chip${S.cat?"":" on"}" aria-pressed="${!S.cat}" data-c="">All</button>`+top.map(([g,n])=>`<button class="chip${S.cat===g?" on":""}" aria-pressed="${S.cat===g}" data-c="${esc(g)}">${esc(g)} · ${n}</button>`).join("");
  if(S.cc&&!ccs.has(S.cc))S.cc="";
  $("cc").innerHTML=`<option value="">All countries</option>`+[...ccs].sort((a,b)=>cname(a[0]).localeCompare(cname(b[0]))).map(([c,n])=>`<option value="${c}">${flag(c)} ${esc(cname(c))} (${n})</option>`).join("");
  $("cc").value=S.cc;$("so").value=S.so;
- document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===S.tab))}
+ syncTabs()}
 function resetF(){$("q").value="";S.cat="";S.cc="";drawFilters();apply()}
 
 // ---------- catalogue ----------
-function ingest(arr,t){S.all=arr;S.map=new Map(arr.map(c=>[c.k,c]));
+function ingest(arr,t){for(const c of arr)c.adult=c.cats.some(g=>/^(xxx|adult)$/i.test(g));S.all=arr;S.map=new Map(arr.map(c=>[c.k,c]));
  if(!saved&&!S.cc){const r=(/-([A-Za-z]{2})$/.exec(navigator.language)||[])[1];if(r&&arr.some(c=>c.cc===r.toUpperCase()))S.cc=r.toUpperCase()}
  drawFilters();apply();
  const ago=t?Math.round((Date.now()-t)/6e4):0;$("stat").textContent=`${arr.length.toLocaleString()} channels · ${ago<1?"just updated":ago<60?ago+"m ago":Math.round(ago/60)+"h ago"}`}
@@ -159,12 +175,12 @@ async function load(force){
  for(const u of SRC){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),45000);
   try{const r=await fetch(u,{signal:ac.signal,cache:force?"reload":"default"});if(!r.ok)throw Error("HTTP "+r.status);
    const b=await r.text();if(!b.includes("#EXTM3U"))throw Error("Invalid playlist");
-   const arr=build(parse(b));if(!arr.length)throw Error("Empty playlist");
+   const arr=build(await parse(b));if(!arr.length)throw Error("Empty playlist");
    clearTimeout(t);const ts=Date.now();idb("put",{t:ts,d:arr});ingest(arr,ts);if(force)toast("Channels refreshed");return}
   catch(e){err=e.message;clearTimeout(t)}}
  if(S.all.length){ingest(S.all,Date.now());toast("Offline — showing saved list");return}
  $("list").innerHTML="";$("stat").textContent="Connection failed";const em=$("empty");em.hidden=false;
- em.innerHTML=`<b>Could not load channels</b>${esc(err)}. Check your connection${location.protocol==="file:"?"":""}, then retry.<br><button class="chip" id="retry">Try again</button>`}
+ em.innerHTML=`<b>Could not load channels</b>${esc(err)}. Check your connection, then retry.<br><button class="chip" id="retry">Try again</button>`}
 
 // ---------- player ----------
 const badge=(t,live)=>{const b=$("badge");b.textContent=t||"";b.className="badge"+(live?" live":"");b.style.display=t?"block":"none"};
@@ -172,7 +188,7 @@ const spin=on=>$("spin").style.display=on?"block":"none";
 function meta(){const c=S.cur;if(!c)return;
  $("nt").textContent=c.name;$("nm").textContent=[c.cn,c.cats[0],c.s[S.si].q?c.s[S.si].q+"p":""].filter(Boolean).join(" · ");
  const a=$("alt");a.hidden=c.s.length<2;a.textContent=`Stream ${S.si+1}/${c.s.length} · switch`;
- const f=$("fv");f.hidden=false;f.textContent=favs.has(c.k)?"★ Saved":"☆ Save";
+ const f=$("fv");f.hidden=false;f.textContent=favs.has(c.k)?"★ Saved":"☆ Save";f.setAttribute("aria-pressed",favs.has(c.k));
  document.querySelectorAll(".row.on").forEach(e=>e.classList.remove("on"));
  const r=$("list").querySelector(`[data-k="${CSS.escape(c.k)}"]`);if(r)r.classList.add("on");
  if("mediaSession"in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:c.name,artist:c.cn});navigator.mediaSession.setActionHandler("previoustrack",()=>step(-1));navigator.mediaSession.setActionHandler("nexttrack",()=>step(1))}}
@@ -184,8 +200,8 @@ function start(){const c=S.cur,s=c.s[S.si],g=++S.g;stop();meta();
  $("ph").style.display="none";spin(true);badge("Connecting…");
  wd=setTimeout(()=>fail(g),15000);
  if(window.Hls&&Hls.isSupported()&&!/\.(mp4|mkv|mpd)(\?|$)/i.test(s.u)){
-  const h=hls=new Hls({backBufferLength:30,manifestLoadingMaxRetry:1,levelLoadingMaxRetry:1,fragLoadingMaxRetry:2});let rec=0;
-  h.on(Hls.Events.ERROR,(_,d)=>{if(g!==S.g||!d.fatal)return;if(d.type===Hls.ErrorTypes.MEDIA_ERROR&&!rec++)h.recoverMediaError();else fail(g)});
+  const h=hls=new Hls({backBufferLength:30,manifestLoadingMaxRetry:1,levelLoadingMaxRetry:1,fragLoadingMaxRetry:2});let rr=0;
+  h.on(Hls.Events.ERROR,(_,d)=>{if(g!==S.g||!d.fatal)return;if(d.type===Hls.ErrorTypes.MEDIA_ERROR&&!rr++)h.recoverMediaError();else fail(g)});
   h.loadSource(s.u);h.attachMedia(v)}
  else{S.native=true;v.src=s.u}
  v.play().catch(e=>{if(g===S.g&&e.name==="NotAllowedError"){clearTimeout(wd);spin(false);badge("Tap ▶ to play")}})}
@@ -193,23 +209,29 @@ function play(c,i=0){if(!c)return;S.cur=c;S.si=i;rec=[c.k,...rec.filter(k=>k!==c
 function step(d){if(!S.view.length)return toast("No channels in list");
  let i=S.cur?S.view.findIndex(c=>c.k===S.cur.k):-1;i=i<0?(d>0?0:S.view.length-1):(i+d+S.view.length)%S.view.length;
  const c=S.view[i];play(c);const r=$("list").querySelector(`[data-k="${CSS.escape(c.k)}"]`);if(r)r.scrollIntoView({block:"center",behavior:"smooth"})}
-const toggle=()=>{if(!S.cur)return toast("Pick a channel first");if(!v.src&&!hls)return start();v.paused?v.play().catch(()=>{}):v.pause()};
+const toggle=()=>{showC();if(!S.cur)return toast("Pick a channel first");if(!v.src&&!hls)return start();v.paused?v.play().catch(()=>{}):v.pause()};
 function fav(k){favs.has(k)?favs.delete(k):favs.add(k);ls.set("fav",[...favs]);$("fc").textContent=favs.size||"";
  const r=$("list").querySelector(`[data-k="${CSS.escape(k)}"] .fv`);
  if(S.tab==="fav"&&!favs.has(k)){r?.closest(".row").remove();S.view=S.view.filter(c=>c.k!==k)}
- else if(r){const on=favs.has(k);r.classList.toggle("on",on);r.textContent=on?"★":"☆"}
+ else if(r){const on=favs.has(k);r.classList.toggle("on",on);r.textContent=on?"★":"☆";r.setAttribute("aria-pressed",on)}
  if(S.cur&&S.cur.k===k)meta();toast(favs.has(k)?"Saved":"Removed")}
 
 // ---------- events ----------
+const sv=p=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${p}"/></svg>`;
+const I={play:sv("M8 5v14l11-7z"),pause:sv("M6 5h4v14H6zM14 5h4v14h-4z"),prev:sv("M6 6h2v12H6zM9.5 12 18 18V6z"),next:sv("M16 6h2v12h-2zM6 18l8.5-6L6 6z"),vol:sv("M3 9v6h4l5 5V4L7 9zM16.5 12A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"),mute:sv("M3 9v6h4l5 5V4L7 9zM17 10.4 15.6 9l-1.6 1.6L12.4 9 11 10.4l1.6 1.6L11 13.6l1.4 1.4 1.6-1.6 1.6 1.6 1.4-1.4-1.6-1.6z"),pip:sv("M19 7h-8v6h8zm4-4H1v18h22zm-2 16.01H3V4.98h18z"),fs:sv("M7 14H5v5h5v-2H7zm-2-4h2V7h3V5H5zm12 7h-3v2h5v-5h-2zM14 5v2h3v3h2V5z")};
+$("pv").innerHTML=I.prev;$("pp").innerHTML=I.play;$("nx").innerHTML=I.next;$("mu").innerHTML=I.vol;$("pip").innerHTML=I.pip;$("fs").innerHTML=I.fs;
+const fr=$("frame");let ht;
+const showC=()=>{fr.classList.add("show");clearTimeout(ht);ht=setTimeout(()=>fr.classList.remove("show"),3000)};
+document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement){try{screen.orientation.unlock()}catch{}}});
 v.addEventListener("playing",()=>{clearTimeout(wd);spin(false);badge("LIVE",true);$("ph").style.display="none"});
 v.addEventListener("waiting",()=>{if(S.cur&&!v.paused)spin(true)});
-v.addEventListener("play",()=>$("pp").textContent="⏸");v.addEventListener("pause",()=>$("pp").textContent="▶");
+v.addEventListener("play",()=>$("pp").innerHTML=I.pause);v.addEventListener("pause",()=>$("pp").innerHTML=I.play);
 v.addEventListener("error",()=>{if(S.native)fail(S.g)});
-v.addEventListener("volumechange",()=>$("mu").textContent=v.muted?"🔇":"🔊");
-$("frame").addEventListener("click",toggle);
+v.addEventListener("volumechange",()=>$("mu").innerHTML=v.muted?I.mute:I.vol);
+fr.addEventListener("click",e=>{if(e.target.closest(".cb"))return showC();if(fr.classList.contains("show")){fr.classList.remove("show");clearTimeout(ht)}else showC()});
 $("pp").onclick=toggle;$("pv").onclick=()=>step(-1);$("nx").onclick=()=>step(1);
 $("mu").onclick=()=>v.muted=!v.muted;
-$("fs").onclick=()=>{const f=$("frame");(f.requestFullscreen||f.webkitRequestFullscreen)?document.fullscreenElement?document.exitFullscreen():(f.requestFullscreen||f.webkitRequestFullscreen).call(f):v.webkitEnterFullscreen?.()};
+$("fs").onclick=()=>{const f=$("frame"),rf=f.requestFullscreen||f.webkitRequestFullscreen;if(document.fullscreenElement||document.webkitFullscreenElement)(document.exitFullscreen||document.webkitExitFullscreen).call(document);else if(rf)Promise.resolve(rf.call(f)).then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape")).catch(()=>{});else if(v.webkitEnterFullscreen){v.readyState>0?v.webkitEnterFullscreen():toast("Start playback first")}};
 if(!document.pictureInPictureEnabled)$("pip").style.display="none";
 $("pip").onclick=()=>document.pictureInPictureElement?document.exitPictureInPicture():v.requestPictureInPicture?.().catch(()=>toast("Start playback first"));
 $("alt").onclick=()=>{if(S.cur){S.si=(S.si+1)%S.cur.s.length;start()}};
@@ -217,19 +239,22 @@ $("fv").onclick=()=>S.cur&&fav(S.cur.k);
 $("refresh").onclick=()=>load(true);
 let dt;$("q").addEventListener("input",()=>{clearTimeout(dt);dt=setTimeout(apply,150)});
 $("chips").onclick=e=>{const b=e.target.closest("[data-c]");if(!b)return;S.cat=b.dataset.c;drawFilters();apply()};
-$("tabs").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;S.tab=b.dataset.t;document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));apply()};
+$("tabs").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;S.tab=b.dataset.t;syncTabs();apply()};
 $("cc").onchange=e=>{S.cc=e.target.value;apply()};$("so").onchange=e=>{S.so=e.target.value;apply()};
-$("rs").onclick=resetF;
+$("rs").onclick=resetF;$("ad").onclick=()=>{S.adult=!S.adult;drawFilters();apply()};
 $("empty").onclick=e=>{if(e.target.id==="rs2")resetF();if(e.target.id==="retry")load(true)};
+$("list").onkeydown=e=>{if(e.target.classList.contains("row")&&(e.key==="Enter"||e.key===" ")){e.preventDefault();play(S.map.get(e.target.dataset.k))}};
 $("list").onclick=e=>{const f=e.target.closest("[data-f]");if(f)return fav(f.dataset.f);
  const r=e.target.closest(".row");if(r)play(S.map.get(r.dataset.k))};
 $("ph").onclick=e=>{if(S.cur){e.stopPropagation();start()}};
 let tx=0,ty=0;
 $("frame").addEventListener("touchstart",e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
 $("frame").addEventListener("touchend",e=>{const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
- if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.5){e.preventDefault();step(dx<0?1:-1)}},{passive:false});
-document.addEventListener("keydown",e=>{if(/INPUT|SELECT/.test(document.activeElement.tagName)){if(e.key==="Escape")document.activeElement.blur();return}
- if(e.key==="ArrowRight")step(1);else if(e.key==="ArrowLeft")step(-1);else if(e.key===" "){e.preventDefault();toggle()}
+ if(tx>24&&tx<innerWidth-24&&Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.5){if(e.cancelable)e.preventDefault();step(dx<0?1:-1)}},{passive:false});
+document.addEventListener("keydown",e=>{const ae=document.activeElement;if(/INPUT|SELECT/.test(ae.tagName)){if(e.key==="Escape")ae.blur();return}
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ if((e.key===" "||e.key==="Enter")&&(ae.tagName==="BUTTON"||ae.classList.contains("row")))return;
+ if(e.key==="ArrowRight")step(1);else if(e.key==="ArrowLeft")step(-1);else if(e.key===" "||(e.key==="Enter"&&ae.id==="frame")){e.preventDefault();toggle()}
  else if(e.key==="m")v.muted=!v.muted;else if(e.key==="f")$("fs").click();else if(e.key==="/"){e.preventDefault();$("q").focus()}});
 
 // ---------- boot ----------
