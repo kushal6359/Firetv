@@ -54,7 +54,7 @@ video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
 .tabs i{font-style:normal;opacity:.7}
 .fl{display:flex;gap:8px;margin-top:10px}
 select{flex:1;min-width:0;height:40px;padding:0 10px;border-radius:12px;border:1px solid var(--l);background:var(--p)}
-.rc{display:flex;justify-content:space-between;align-items:center;padding:12px 2px 6px;font-size:12px;color:var(--m)}\n.scan-note{font-size:12px;color:var(--m);padding:0 2px 6px;min-height:18px}
+.rc{display:flex;justify-content:space-between;align-items:center;padding:12px 2px 6px;font-size:12px;color:var(--m)}
 #rs{color:#fff;text-decoration:underline;font-size:12px}
 .row{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid transparent;border-bottom-color:var(--l);border-radius:12px;cursor:pointer;content-visibility:auto;contain-intrinsic-size:64px}
 .row:hover{background:var(--p)}.row.on{background:var(--p2);border-color:#fff}
@@ -79,7 +79,7 @@ select{flex:1;min-width:0;height:40px;padding:0 10px;border-radius:12px;border:1
 .dock{border-bottom:0;padding:16px}.frame{max-height:none}.lib{padding:16px 16px 40px;border-left:1px solid var(--l)}}
 </style></head>
 <body>
-<header class="top"><span class="brand">Fire TV</span><span id="stat">Loading…</span><button class="ib" id="scan" title="Scan matching channels" aria-label="Scan matching channels">◎</button><button class="ib" id="refresh" title="Refresh channels" aria-label="Refresh">↻</button></header>
+<header class="top"><span class="brand">Fire TV</span><span id="stat">Loading…</span><button class="ib" id="refresh" title="Refresh channels" aria-label="Refresh">↻</button></header>
 <div class="app">
 <section class="dock">
  <div class="frame" id="frame" role="group" tabindex="0" aria-label="Video player"><video id="v" playsinline></video>
@@ -95,7 +95,7 @@ select{flex:1;min-width:0;height:40px;padding:0 10px;border-radius:12px;border:1
  <div class="chips" id="chips"></div>
  <div class="tabs" id="tabs"><button data-t="all" class="on">All</button><button data-t="fav">Saved <i id="fc"></i></button><button data-t="rec">Recent</button></div>
  <div class="fl"><select id="cc" aria-label="Country"></select><select id="so" aria-label="Sort"><option value="az">A–Z</option><option value="hd">Best quality</option></select><button class="chip" id="ad" aria-pressed="false" style="flex:none"></button></div>
- <div class="rc"><span id="rc"></span><button id="rs" hidden>Reset filters</button></div><div class="scan-note" id="scanNote" aria-live="polite">Search is local and immediate. Scan checks only matching channels.</div>
+ <div class="rc"><span id="rc"></span><button id="rs" hidden>Reset filters</button></div>
  <div id="list"></div><div id="sent" style="height:1px"></div><div class="empty" id="empty" hidden></div>
 </section></div>
 <div class="toast" id="toast" role="status"></div>
@@ -114,7 +114,7 @@ const cname=c=>{if(!c)return"International";try{return rn.of(c==="UK"?"GB":c)||c
 const flag=c=>c?String.fromCodePoint(...[...(c==="UK"?"GB":c)].map(x=>127397+x.charCodeAt())):"🌐";
 const S={all:[],view:[],map:new Map(),cur:null,si:0,tab:"all",cat:"",cc:"",so:"az",adult:false,n:0,g:0,native:false};
 const saved=ls.get("f",null);if(saved)Object.assign(S,saved);
-const favs=new Set(ls.get("fav",[]));let rec=ls.get("rec",[]),hls=null,wd,tt,cacheTime=0,loadToken=0;\nlet scanRun=0,scanAbort=new Set(),scanResults=new Map();
+const favs=new Set(ls.get("fav",[]));let rec=ls.get("rec",[]),hls=null,wd,tt,cacheTime=0,loadToken=0;
 const toast=m=>{const e=$("toast");e.textContent=m;e.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>e.classList.remove("show"),2400)};
 const persist=()=>ls.set("f",{tab:S.tab,cat:S.cat,cc:S.cc,so:S.so,adult:S.adult});
 
@@ -140,7 +140,7 @@ function build(items){const map=new Map();
 
 // ---------- list ----------
 function row(c){const f=favs.has(c.k),on=S.cur&&S.cur.k===c.k;
- const st=scanResults.get(c.k)||"unchecked";const stLabel=st==="online"?"Online":st==="offline"?"Offline":st==="checking"?"Checking…":st==="error"?"Unknown":"Not checked";\n  return `<div class="row${on?" on":""}" data-k="${esc(c.k)}" role="button" tabindex="0"><div class="lg"><span>${esc(ini(c.name))}</span>${c.logo?`<img loading="lazy" src="${esc(c.logo)}" alt="">`:""}</div><div class="ci"><b>${esc(c.name)}</b><div class="cd"><span>${flag(c.cc)} ${esc(c.cn)}</span><span class="pill">${esc(c.cats[0]||"Other")}</span>${c.q?`<span class="pill">${c.q}p</span>`:""}${c.s.length>1?`<span>×${c.s.length}</span>`:""}<span class="pill" data-status="${st}">${stLabel}</span></div></div><button class="fv${f?" on":""}" data-f="${esc(c.k)}" aria-pressed="${f}" aria-label="Save ${esc(c.name)}">${f?"★":"☆"}</button></div>`}
+ return `<div class="row${on?" on":""}" data-k="${esc(c.k)}" role="button" tabindex="0"><div class="lg"><span>${esc(ini(c.name))}</span>${c.logo?`<img loading="lazy" src="${esc(c.logo)}" alt="">`:""}</div><div class="ci"><b>${esc(c.name)}</b><div class="cd"><span>${flag(c.cc)} ${esc(c.cn)}</span><span class="pill">${esc(c.cats[0]||"Other")}</span>${c.q?`<span class="pill">${c.q}p</span>`:""}${c.s.length>1?`<span>×${c.s.length}</span>`:""}</div></div><button class="fv${f?" on":""}" data-f="${esc(c.k)}" aria-pressed="${f}" aria-label="Save ${esc(c.name)}">${f?"★":"☆"}</button></div>`}
 const io=new IntersectionObserver(e=>{if(e[0].isIntersecting)more()},{rootMargin:"600px"});
 $("list").addEventListener("error",e=>{if(e.target instanceof HTMLImageElement&&e.target.closest(".lg"))e.target.remove()},true);
 function more(){if(S.n>=S.view.length)return;const a=S.view.slice(S.n,S.n+60);S.n+=a.length;$("list").insertAdjacentHTML("beforeend",a.map(row).join(""));io.unobserve($("sent"));io.observe($("sent"))}
@@ -219,63 +219,6 @@ function fav(k){if(!k)return;const was=favs.has(k);if(was)favs.delete(k);else fa
  apply();if(S.cur&&S.cur.k===k)meta();toast(was?"Removed from saved":"Saved channel")}
 
 
-// ---------- on-demand scan (only the current filtered results) ----------
-async function checkOne(channel, signal) {
-  // A backend is required because browsers cannot reliably inspect arbitrary stream URLs due to CORS.
-  const endpoint = new URL("/check-stream", location.origin);
-  endpoint.searchParams.set("url", channel.s[0].u);
-  const response = await fetch(endpoint, {signal, headers: {"Accept":"application/json"}});
-  if (!response.ok) throw new Error("Proxy unavailable");
-  const data = await response.json();
-  return data.online ? "online" : "offline";
-}
-async function scanMatches() {
-  if (!S.view.length) { $("scanNote").textContent = "No matching channels to scan."; return; }
-  cancelScan("");
-  const run = scanRun;
-  const targets = S.view.slice();
-  const concurrency = 4;
-  let cursor = 0, done = 0, online = 0, offline = 0, unknown = 0;
-  $("scanNote").textContent = `Scanning ${targets.length.toLocaleString()} matching channels · 4 at a time…`;
-  async function worker() {
-    while (cursor < targets.length && run === scanRun) {
-      const c = targets[cursor++];
-      const ac = new AbortController();
-      scanAbort.add(ac);
-      scanResults.set(c.k, "checking");
-      const rowEl = $("list").querySelector(`[data-k="${CSS.escape(c.k)}"]`);
-      const statusEl = rowEl?.querySelector("[data-status]");
-      if (statusEl) { statusEl.dataset.status = "checking"; statusEl.textContent = "Checking…"; }
-      try {
-        const result = await checkOne(c, ac.signal);
-        if (run !== scanRun) return;
-        scanResults.set(c.k, result);
-        if (result === "online") online++; else offline++;
-      } catch (e) {
-        if (e.name === "AbortError" || run !== scanRun) return;
-        scanResults.set(c.k, "error"); unknown++;
-      } finally {
-        scanAbort.delete(ac);
-        done++;
-        const el = $("list").querySelector(`[data-k="${CSS.escape(c.k)}"] [data-status]`);
-        if (el && run === scanRun) {
-          const st = scanResults.get(c.k) || "unchecked";
-          el.dataset.status = st;
-          el.textContent = st === "online" ? "Online" : st === "offline" ? "Offline" : st === "checking" ? "Checking…" : st === "error" ? "Unknown" : "Not checked";
-        }
-        if (run === scanRun) $("scanNote").textContent = `Scanned ${done}/${targets.length} · ${online} online · ${offline} offline · ${unknown} unknown`;
-      }
-    }
-  }
-  await Promise.all(Array.from({length: Math.min(concurrency, targets.length)}, worker));
-  if (run === scanRun) {
-    // Re-render so results remain visible when a channel row is recycled by filtering/pagination.
-    apply();
-    $("scanNote").textContent = `Scan complete · ${online} online · ${offline} offline · ${unknown} unknown.`;
-  }
-}
-$("scan").addEventListener("click", scanMatches);
-
 // ---------- events ----------
 const sv=p=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${p}"/></svg>`;
 const I={play:sv("M8 5v14l11-7z"),pause:sv("M6 5h4v14H6zM14 5h4v14h-4z"),prev:sv("M6 6h2v12H6zM9.5 12 18 18V6z"),next:sv("M16 6h2v12h-2zM6 18l8.5-6L6 6z"),vol:sv("M3 9v6h4l5 5V4L7 9zM16.5 12A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"),mute:sv("M3 9v6h4l5 5V4L7 9zM17 10.4 15.6 9l-1.6 1.6L12.4 9 11 10.4l1.6 1.6L11 13.6l1.4 1.4 1.6-1.6 1.6 1.6 1.4-1.4-1.6-1.6z"),pip:sv("M19 7h-8v6h8zm4-4H1v18h22zm-2 16.01H3V4.98h18z"),fs:sv("M7 14H5v5h5v-2H7zm-2-4h2V7h3V5H5zm12 7h-3v2h5v-5h-2zM14 5v2h3v3h2V5z")};
@@ -297,19 +240,7 @@ $("pip").onclick=()=>document.pictureInPictureElement?document.exitPictureInPict
 $("alt").onclick=()=>{if(S.cur){S.si=(S.si+1)%S.cur.s.length;start()}};
 $("fv").onclick=()=>S.cur&&fav(S.cur.k);
 $("refresh").onclick=()=>load(true);
-let dt;
-function cancelScan(message="Scan paused because the search changed.") {
-  scanRun++;
-  for (const ac of scanAbort) ac.abort();
-  scanAbort.clear();
-  for (const [k,st] of scanResults) if (st==="checking") scanResults.set(k,"unchecked");
-  $("scanNote").textContent=message;
-}
-$("q").addEventListener("input",()=>{
-  cancelScan("Search changed. Scan paused; press ◎ to scan the new results.");
-  clearTimeout(dt);
-  dt=setTimeout(apply,80);
-});
+let dt;$("q").addEventListener("input",()=>{clearTimeout(dt);dt=setTimeout(apply,150)});
 $("chips").onclick=e=>{const b=e.target.closest("[data-c]");if(!b)return;S.cat=b.dataset.c;drawFilters();apply()};
 $("tabs").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;S.tab=b.dataset.t;syncTabs();apply()};
 $("cc").onchange=e=>{S.cc=e.target.value;apply()};$("so").onchange=e=>{S.so=e.target.value;apply()};
