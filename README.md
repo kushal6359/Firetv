@@ -2,9 +2,6 @@ Fire TV — Live TV Web Player
 
 A browser-based live TV player for discovering and watching publicly listed television streams. Browse channels by country and genre, search for channels, save favorites, and use the built-in video player.
 
-Live Demo: https://firetv-six.vercel.app/
-Source Code: https://github.com/kushal6359/Firetv
-
 Features
 
 - Live TV playback in a modern web interface
@@ -19,10 +16,9 @@ Features
 Feature availability depends on browser compatibility and the stream itself.
 
 Getting Started
-
 Use the online player
 
-Open the live demo:
+Open the live page:
 
 https://firetv-six.vercel.app/
 
