@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-gIUacWA3h5501xNMQLazpwrJ63+dophgnWVAWQBKdRk='; worker-src blob:; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; media-src 'self' https: http: blob:; connect-src 'self' https: http: blob:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-u16WQdltn8QuFgxAFyN3TDfsEcRAkKe/WtY0OhrEumw='; worker-src blob:; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; media-src 'self' https: http: blob:; connect-src 'self' https: http: blob:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests">
 <title>Fire TV — Live channels</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.18/dist/hls.min.js"></script>
 <style>
@@ -13,8 +13,8 @@ button,input,select{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 :focus-visible{outline:2px solid #fff;outline-offset:2px}
 .top{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;height:var(--th);padding:env(safe-area-inset-top,0px) 14px 0;background:var(--bg);border-bottom:1px solid var(--l)}
-.brand{font-size:19px;font-weight:800;letter-spacing:-.5px}
-#stat{flex:1;font-size:11px;color:var(--m);text-align:right}
+.brand{flex:1;font-size:19px;font-weight:800;letter-spacing:-.5px}
+
 .ib{width:38px;height:38px;border:1px solid var(--l);border-radius:12px;display:grid;place-items:center;background:var(--bg);flex:none}
 .ib:hover{background:var(--p2)}.ib:active{transform:scale(.95)}
 .app{max-width:1400px;margin:auto}
@@ -55,6 +55,7 @@ video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
 .fl{display:flex;gap:8px;margin-top:10px}
 select{flex:1;min-width:0;height:40px;padding:0 10px;border-radius:12px;border:1px solid var(--l);background:var(--p)}
 .rc{display:flex;justify-content:space-between;align-items:center;padding:12px 2px 6px;font-size:12px;color:var(--m)}
+
 #rs{color:#fff;text-decoration:underline;font-size:12px}
 .row{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid transparent;border-bottom-color:var(--l);border-radius:12px;cursor:pointer;content-visibility:auto;contain-intrinsic-size:64px}
 .row:hover{background:var(--p)}.row.on{background:var(--p2);border-color:#fff}
@@ -68,7 +69,7 @@ select{flex:1;min-width:0;height:40px;padding:0 10px;border-radius:12px;border:1
 @keyframes s{to{background-position:-200% 0}}
 .empty{text-align:center;padding:36px 16px;color:var(--m)}.empty b{display:block;color:#fff;margin-bottom:6px}
 .empty .chip{margin-top:12px;color:#fff}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#fff;color:#000;padding:10px 16px;border-radius:99px;font-size:13px;font-weight:600;transition:.25s;z-index:99;max-width:90vw}
+.toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#fff;color:#000;padding:10px 16px;border-radius:99px;font-size:13px;font-weight:600;transition:.25s;z-index:99;max-width:90vw}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media(orientation:landscape) and (max-height:600px){:root{--th:calc(44px + env(safe-area-inset-top,0px))}
 .app{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);align-items:start;max-width:none}
@@ -77,27 +78,43 @@ select{flex:1;min-width:0;height:40px;padding:0 10px;border-radius:12px;border:1
 .lib{padding:8px calc(12px + env(safe-area-inset-right,0px)) 40px 12px;border-left:1px solid var(--l)}}
 @media(min-width:900px){.app{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(360px,1fr);align-items:start}
 .dock{border-bottom:0;padding:16px}.frame{max-height:none}.lib{padding:16px 16px 40px;border-left:1px solid var(--l)}}
+.srch{display:flex;gap:8px}.srch #q{flex:1;min-width:0}
+.fb{height:46px;padding:0 14px;border:1px solid var(--l);border-radius:99px;background:var(--p);font-size:13px;font-weight:600;white-space:nowrap;flex:none}
+.fb[aria-expanded=true],.fb.act{border-color:#fff}
+.fpan{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.fpan[hidden]{display:none}
+.fpan select{flex:1 1 140px}
+.cd>span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.hd{flex:none;border:1px solid var(--m);border-radius:4px;padding:0 4px;font-size:10px;font-weight:800;line-height:14px;color:var(--m)}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:55;display:flex;gap:6px;border-radius:0;border:0;border-top:1px solid var(--l);background:var(--bg);padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px))}
+.bnav button{flex:1;padding:10px;border-radius:12px}
+.hint{position:absolute;left:8px;right:8px;bottom:8px;z-index:7;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:#000d;font-size:12px}
+.hint[hidden]{display:none}.hint span{flex:1}.hint button{padding:4px 10px;border:1px solid #fff;border-radius:99px;font-size:12px;font-weight:600}
+.fatal{position:fixed;inset:0;z-index:90;display:grid;place-items:center;align-content:center;gap:10px;padding:24px;text-align:center;background:var(--bg)}
+.fatal[hidden]{display:none}.fatal b{font-size:18px}.fatal span{color:var(--m)}
+.lib{padding-bottom:110px}
 </style></head>
 <body>
-<header class="top"><span class="brand">Fire TV</span><span id="stat">Loading…</span><button class="ib" id="refresh" title="Refresh channels" aria-label="Refresh">↻</button></header>
+<header class="top"><span class="brand">Fire TV</span><button class="ib" id="refresh" title="Refresh channels" aria-label="Refresh">↻</button></header>
 <div class="app">
 <section class="dock">
  <div class="frame" id="frame" role="group" tabindex="0" aria-label="Video player"><video id="v" playsinline></video>
-  <div class="ph" id="ph"><div class="big">▶</div><b id="phT">Pick a channel</b><span id="phS">Browse the list to start watching</span></div>
+  <div class="ph" id="ph"><div class="big">▶</div><b id="phT">Tap to start watching</b><span id="phS">Or pick a channel from the list</span></div>
   <div class="spin" id="spin" role="status" aria-label="Loading stream"></div><div class="badge" id="badge" role="status" aria-live="polite"></div>
- <div class="ctl" id="ctl"><button class="cb" id="pv" aria-label="Previous"></button><button class="cb lg" id="pp" aria-label="Play/Pause"></button><button class="cb" id="nx" aria-label="Next"></button><div class="ex"><button class="cb" id="mu" aria-label="Mute"></button><button class="cb" id="pip" aria-label="Picture in picture"></button><button class="cb" id="fs" aria-label="Fullscreen"></button></div></div></div>
+ <div class="hint" id="hint" hidden><span id="hintT"></span><button id="hintX">Got it</button></div>
+ <div class="ctl" id="ctl"><button class="cb" id="pv" title="Previous (←)" aria-label="Previous (←)"></button><button class="cb lg" id="pp" title="Play / Pause (Space)" aria-label="Play / Pause (Space)"></button><button class="cb" id="nx" title="Next (→)" aria-label="Next (→)"></button><div class="ex"><button class="cb" id="mu" title="Mute (m)" aria-label="Mute (m)"></button><button class="cb" id="pip" title="Picture in picture" aria-label="Picture in picture"></button><button class="cb" id="fs" title="Fullscreen (f)" aria-label="Fullscreen (f)"></button></div></div></div>
  <div class="bar"><div class="np"><b id="nt">Nothing playing</b><span id="nm">&nbsp;</span></div>
   </div>
  <div class="sub"><button class="chip" id="alt" hidden></button><button class="chip" id="fv" hidden>☆ Save</button></div>
 </section>
 <section class="lib">
- <input id="q" type="search" placeholder="Search channels, countries, genres" autocomplete="off" aria-label="Search">
+ <div class="srch"><input id="q" type="search" placeholder="Search channels, countries, genres" autocomplete="off" aria-label="Search" title="Search (/)"><button class="fb" id="fb" aria-expanded="false" aria-controls="fpan">Filters</button></div>
  <div class="chips" id="chips"></div>
- <div class="tabs" id="tabs"><button data-t="all" class="on">All</button><button data-t="fav">Saved <i id="fc"></i></button><button data-t="rec">Recent</button></div>
- <div class="fl"><select id="cc" aria-label="Country"></select><select id="so" aria-label="Sort"><option value="az">A–Z</option><option value="hd">Best quality</option></select><button class="chip" id="ad" aria-pressed="false" style="flex:none"></button></div>
+ <div class="fpan" id="fpan" hidden><select id="cc" aria-label="Country"></select><select id="so" aria-label="Sort"><option value="az">A–Z</option><option value="hd">Best quality</option></select><button class="chip" id="ad" aria-pressed="false" style="flex:none"></button></div>
  <div class="rc"><span id="rc"></span><button id="rs" hidden>Reset filters</button></div>
  <div id="list"></div><div id="sent" style="height:1px"></div><div class="empty" id="empty" hidden></div>
 </section></div>
+<nav class="tabs bnav" id="tabs" aria-label="Views"><button data-t="all" class="on">All</button><button data-t="fav">Saved <i id="fc"></i></button><button data-t="rec">Recent</button></nav>
+<div class="fatal" id="fatal" hidden></div>
 <div class="toast" id="toast" role="status"></div>
 <script>
 (()=>{"use strict";
@@ -138,23 +155,38 @@ function build(items){const map=new Map();
  for(const c of arr){c.s=c.s.filter((s,i,a)=>a.findIndex(z=>z.u===s.u)===i).sort((a,b)=>a.bad-b.bad||b.q-a.q);c.q=c.s[0].q;c.cn=cname(c.cc);c.n2=norm(c.name+" "+c.cn+" "+c.cats.join(" "))}
  return arr.sort((a,b)=>a.name.localeCompare(b.name))}
 
+
+// ---------- ordering: Kannada first, then other Indian channels, then the rest ----------
+const KN_RE=/kannada|suvarna|udaya|kasturi|\bpublic ?tv\b|power ?tv|news ?first|tv ?9 ?karnataka|bengaluru|karnataka/i;
+let knIds=new Set(ls.get("kn",{ids:[]}).ids);
+const rank=c=>(knIds.has(c.k)||(c.cc==="IN"&&KN_RE.test(c.name)))?0:c.cc==="IN"?1:2;
+const byRank=(x,y)=>rank(x)-rank(y);
+async function loadKannada(){
+ const c=ls.get("kn",{t:0,ids:[]});if(Date.now()-c.t<864e5&&c.ids.length)return;
+ for(const u of["https://iptv-org.github.io/iptv/languages/kan.m3u","https://cdn.jsdelivr.net/gh/iptv-org/iptv@gh-pages/languages/kan.m3u"]){
+  try{const r=await fetch(u);if(!r.ok)continue;const t=await r.text();
+   const ids=[...t.matchAll(/tvg-id="([^"]*)"/g)].map(m=>m[1].split("@")[0]).filter(Boolean);
+   if(!ids.length)continue;knIds=new Set(ids);ls.set("kn",{t:Date.now(),ids});if(S.all.length)apply();return}catch{}}}
+
 // ---------- list ----------
 function row(c){const f=favs.has(c.k),on=S.cur&&S.cur.k===c.k;
- return `<div class="row${on?" on":""}" data-k="${esc(c.k)}" role="button" tabindex="0"><div class="lg"><span>${esc(ini(c.name))}</span>${c.logo?`<img loading="lazy" src="${esc(c.logo)}" alt="">`:""}</div><div class="ci"><b>${esc(c.name)}</b><div class="cd"><span>${flag(c.cc)} ${esc(c.cn)}</span><span class="pill">${esc(c.cats[0]||"Other")}</span>${c.q?`<span class="pill">${c.q}p</span>`:""}${c.s.length>1?`<span>×${c.s.length}</span>`:""}</div></div><button class="fv${f?" on":""}" data-f="${esc(c.k)}" aria-pressed="${f}" aria-label="Save ${esc(c.name)}">${f?"★":"☆"}</button></div>`}
+  return `<div class="row${on?" on":""}" data-k="${esc(c.k)}" role="button" tabindex="0"><div class="lg"><span>${esc(ini(c.name))}</span>${c.logo?`<img loading="lazy" src="${esc(c.logo)}" alt="">`:""}</div><div class="ci"><b>${esc(c.name)}</b><div class="cd"><span>${esc(c.cats[0]||"Other")} • ${flag(c.cc)} ${esc(c.cn)}</span>${c.q>=720?`<span class="hd" title="${c.q}p">HD</span>`:""}</div></div><button class="fv${f?" on":""}" data-f="${esc(c.k)}" aria-pressed="${f}" aria-label="Save ${esc(c.name)}">${f?"★":"☆"}</button></div>`}
 const io=new IntersectionObserver(e=>{if(e[0].isIntersecting)more()},{rootMargin:"600px"});
 $("list").addEventListener("error",e=>{if(e.target instanceof HTMLImageElement&&e.target.closest(".lg"))e.target.remove()},true);
 function more(){if(S.n>=S.view.length)return;const a=S.view.slice(S.n,S.n+60);S.n+=a.length;$("list").insertAdjacentHTML("beforeend",a.map(row).join(""));io.unobserve($("sent"));io.observe($("sent"))}
 function apply(){const q=norm($("q").value);
  let a=S.all.filter(c=>!(S.tab==="fav"&&!favs.has(c.k))&&!(S.tab==="rec"&&!rec.includes(c.k))&&!(S.cat&&!c.cats.includes(S.cat))&&!(S.cc&&c.cc!==S.cc)&&!(q&&!c.n2.includes(q))&&!(c.adult&&!S.adult));
  if(S.tab==="rec")a.sort((x,y)=>rec.indexOf(x.k)-rec.indexOf(y.k));
- else if(S.so==="hd")a.sort((x,y)=>y.q-x.q||x.name.localeCompare(y.name));
- else if(q)a.sort((x,y)=>(norm(y.name).startsWith(q)-norm(x.name).startsWith(q))||x.name.localeCompare(y.name));
+ else if(S.so==="hd")a.sort((x,y)=>byRank(x,y)||y.q-x.q||x.name.localeCompare(y.name));
+ else if(q)a.sort((x,y)=>(norm(y.name).startsWith(q)-norm(x.name).startsWith(q))||byRank(x,y)||x.name.localeCompare(y.name));
+ else a.sort((x,y)=>byRank(x,y)||x.name.localeCompare(y.name));
  S.view=a;S.n=0;$("list").innerHTML="";more();
  const act=!!(q||S.cat||S.cc);$("rs").hidden=!act;
  $("rc").textContent=`${a.length.toLocaleString()} channel${a.length===1?"":"s"}`;
  const em=$("empty");em.hidden=!!a.length||!S.all.length;
  if(!a.length)em.innerHTML=S.tab==="fav"&&!favs.size?"<b>No saved channels yet</b>Tap ☆ on any channel to keep it here.":S.tab==="rec"&&!rec.length?"<b>Nothing watched yet</b>Channels you play will show up here.":`<b>No channels match</b>Try a different search or clear your filters.<br><button class="chip" id="rs2">Reset filters</button>`;
- $("fc").textContent=favs.size||"";persist()}
+ $("fc").textContent=favs.size||"";updFb();persist()}
+function updFb(){const n=(S.cc?1:0)+(S.so!=="az"?1:0)+(S.adult?1:0);const b=$("fb");b.textContent=n?`Filters · ${n}`:"Filters";b.classList.toggle("act",n>0)}
 const syncTabs=()=>{document.querySelectorAll("#tabs button").forEach(b=>{const on=b.dataset.t===S.tab;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});const a=$("ad");a.textContent=S.adult?"Adult: shown":"Adult: hidden";a.setAttribute("aria-pressed",S.adult);a.classList.toggle("on",S.adult)};
 function drawFilters(){const cats=new Map(),ccs=new Map();
  for(const c of S.all){if(c.adult&&!S.adult)continue;for(const g of c.cats)cats.set(g,(cats.get(g)||0)+1);ccs.set(c.cc,(ccs.get(c.cc)||0)+1)}
@@ -170,9 +202,9 @@ function resetF(){$("q").value="";S.cat="";S.cc="";drawFilters();apply();toast("
 function ingest(arr,t){for(const c of arr)c.adult=c.cats.some(g=>/^(xxx|adult)$/i.test(g));S.all=arr;S.map=new Map(arr.map(c=>[c.k,c]));
  if(!saved&&!S.cc){const r=(/-([A-Za-z]{2})$/.exec(navigator.language)||[])[1];if(r&&arr.some(c=>c.cc===r.toUpperCase()))S.cc=r.toUpperCase()}
  drawFilters();apply();
- const ago=t?Math.round((Date.now()-t)/6e4):0;$("stat").textContent=`${arr.length.toLocaleString()} channels · ${ago<1?"just updated":ago<60?ago+"m ago":Math.round(ago/60)+"h ago"}`}
+ $("fatal").hidden=true}
 async function load(force){
- const token=++loadToken;if(!S.all.length){$("list").innerHTML='<div class="sk"></div>'.repeat(7);$("empty").hidden=true;}$("stat").textContent=S.all.length?"Refreshing…":"Loading…";
+ const token=++loadToken;if(!S.all.length){$("list").innerHTML='<div class="sk"></div>'.repeat(7);$("empty").hidden=true;}$("fatal").hidden=true;if(S.all.length&&force)toast("Refreshing channels…");
  let err="";
  for(const u of SRC){if(token!==loadToken)return;const ac=new AbortController(),t=setTimeout(()=>ac.abort(),45000);
   try{const r=await fetch(u,{signal:ac.signal,cache:force?"reload":"default"});if(!r.ok)throw Error("HTTP "+r.status);
@@ -180,9 +212,9 @@ async function load(force){
    const arr=build(await parse(b));if(!arr.length)throw Error("Empty playlist");
    clearTimeout(t);if(token!==loadToken)return;const ts=Date.now();cacheTime=ts;idb("put",{t:ts,d:arr});ingest(arr,ts);if(force)toast("Channels refreshed");return}
   catch(e){err=e.message;clearTimeout(t)}}
- if(token!==loadToken)return;if(S.all.length){ingest(S.all,cacheTime);$("stat").textContent="Offline · cached catalogue";toast("Offline — showing saved list");return}
- $("list").innerHTML="";$("stat").textContent="Connection failed";const em=$("empty");em.hidden=false;
- em.innerHTML=`<b>Could not load channels</b>${esc(err)}. Check your connection, then retry.<br><button class="chip" id="retry">Try again</button>`}
+ if(token!==loadToken)return;if(S.all.length){ingest(S.all,cacheTime);toast("Offline — showing saved list");return}
+ $("list").innerHTML="";const ft=$("fatal");ft.hidden=false;
+ ft.innerHTML=`<b>Could not load channels</b><span>${esc(err)}. Check your connection, then retry.</span><button class="chip" id="retry">Try again</button>`}
 
 // ---------- player ----------
 const badge=(t,live)=>{const b=$("badge");b.textContent=t||"";b.className="badge"+(live?" live":"");b.style.display=t?"block":"none"};
@@ -194,27 +226,49 @@ function meta(){const c=S.cur;if(!c)return;
  document.querySelectorAll(".row.on").forEach(e=>e.classList.remove("on"));
  const r=$("list").querySelector(`[data-k="${CSS.escape(c.k)}"]`);if(r)r.classList.add("on");
  if("mediaSession"in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:c.name,artist:c.cn});navigator.mediaSession.setActionHandler("previoustrack",()=>step(-1));navigator.mediaSession.setActionHandler("nexttrack",()=>step(1))}}
-function stop(){clearTimeout(wd);if(hls){try{hls.destroy()}catch{}hls=null}S.native=false;v.pause();v.removeAttribute("src");try{v.load()}catch{}}
-function fail(g){if(g!==S.g)return;clearTimeout(wd);const c=S.cur;stop();spin(false);
+const GOOD=ls.get("good",{});let stallT,rcn=0,rcT;S.played=false;
+function stop(){clearTimeout(wd);clearTimeout(stallT);if(hls){try{hls.destroy()}catch{}hls=null}S.native=false;v.pause();v.removeAttribute("src");try{v.load()}catch{}}
+function fail(g){if(g!==S.g)return;clearTimeout(wd);clearTimeout(stallT);const c=S.cur;
+ // a stream that was already playing gets a couple of clean reconnects before we give up on it
+ if(S.played&&rcn<2){rcn++;toast("Connection lost — reconnecting…");stop();start();return}
+ stop();spin(false);S.played=false;rcn=0;
  if(c&&S.si<c.s.length-1){S.si++;toast(`Trying stream ${S.si+1} of ${c.s.length}…`);start()}
  else{badge("Unavailable");$("ph").style.display="flex";$("phT").textContent="Stream unavailable";$("phS").textContent="This stream may be offline or region-locked. Tap to retry.";S.si=0;meta()}}
 function attemptPlay(g){if(g!==S.g)return;const result=v.play();if(result&&typeof result.catch==="function")result.catch(e=>{if(g!==S.g)return;if(e.name==="NotAllowedError"){clearTimeout(wd);spin(false);badge("Tap Play to start");$("ph").style.display="flex";$("phT").textContent="Playback paused by browser";$("phS").textContent="Tap here or press Play to resume."}else if(e.name!=="AbortError")fail(g)})}
+function playNative(g,u){S.native=true;v.src=u;v.load();attemptPlay(g)}
+function stall(g){if(g!==S.g||!S.cur||v.paused)return;
+ if(hls&&!S.native){toast("Stream stalled — reconnecting…");try{hls.startLoad();hls.recoverMediaError()}catch{}stallT=setTimeout(()=>fail(g),15000)}
+ else fail(g)}
 function start(){const c=S.cur;if(!c||!c.s||!c.s[S.si])return;const s=c.s[S.si],g=++S.g;stop();meta();
- $("ph").style.display="none";spin(true);badge("Connecting…");wd=setTimeout(()=>fail(g),25000);
+ $("ph").style.display="none";spin(true);badge("Connecting…");wd=setTimeout(()=>fail(g),30000);
  const isFile=/\.(mp4|mkv|mpd)(\?|$)/i.test(s.u);
  if(window.Hls&&Hls.isSupported()&&!isFile){
-  const h=hls=new Hls({backBufferLength:30,manifestLoadingMaxRetry:1,levelLoadingMaxRetry:1,fragLoadingMaxRetry:2});let recovered=false,started=false;
+  const h=hls=new Hls({backBufferLength:30,maxBufferLength:30,capLevelToPlayerSize:true,liveSyncDurationCount:3,nudgeMaxRetry:6,
+   manifestLoadingTimeOut:15000,manifestLoadingMaxRetry:3,manifestLoadingRetryDelay:1000,
+   levelLoadingTimeOut:15000,levelLoadingMaxRetry:4,levelLoadingRetryDelay:1000,
+   fragLoadingTimeOut:20000,fragLoadingMaxRetry:6,fragLoadingRetryDelay:1000,fragLoadingMaxRetryTimeout:16000});
+  let started=false,nr=0,mr=0,frags=0;
   h.on(Hls.Events.MEDIA_ATTACHED,()=>{if(g===S.g)h.loadSource(s.u)});
-  h.on(Hls.Events.MANIFEST_PARSED,()=>{if(g===S.g&&!started){started=true;attemptPlay(g)}});
-  h.on(Hls.Events.ERROR,(_,d)=>{if(g!==S.g||!d.fatal)return;if(d.type===Hls.ErrorTypes.MEDIA_ERROR&&!recovered){recovered=true;h.recoverMediaError()}else fail(g)});
+  h.on(Hls.Events.MANIFEST_PARSED,()=>{if(g!==S.g)return;clearTimeout(wd);wd=setTimeout(()=>fail(g),20000);if(!started){started=true;attemptPlay(g)}});
+  h.on(Hls.Events.FRAG_LOADED,()=>{nr=0;if(++frags>10)mr=0});
+  h.on(Hls.Events.ERROR,(_,d)=>{if(g!==S.g||!d.fatal)return;
+   if(d.type===Hls.ErrorTypes.NETWORK_ERROR){
+    // manifest never loaded (often CORS): let the browser try the URL natively if it can do HLS itself
+    if(!S.played&&!started&&v.canPlayType("application/vnd.apple.mpegurl")){try{h.destroy()}catch{}hls=null;clearTimeout(wd);wd=setTimeout(()=>fail(g),20000);return playNative(g,s.u)}
+    if(nr<4){nr++;setTimeout(()=>{if(g===S.g&&hls===h)h.startLoad()},800*nr)}else fail(g)}
+   else if(d.type===Hls.ErrorTypes.MEDIA_ERROR&&mr<2){if(mr++===1)h.swapAudioCodec();h.recoverMediaError()}
+   else fail(g)});
   h.attachMedia(v);
- }else{S.native=true;v.src=s.u;v.load();attemptPlay(g)}
+ }else playNative(g,s.u)
 }
-function play(c,i=0){if(!c)return;S.cur=c;S.si=i;rec=[c.k,...rec.filter(k=>k!==c.k)].slice(0,30);ls.set("rec",rec);ls.set("last",c.k);start()}
+function play(c,i=0){if(!c)return;S.cur=c;S.played=false;rcn=0;
+ if(!i){const gi=c.s.findIndex(x=>x.u===GOOD[c.k]);if(gi>0)i=gi} // prefer the stream that worked last time
+ S.si=i;rec=[c.k,...rec.filter(k=>k!==c.k)].slice(0,30);ls.set("rec",rec);ls.set("last",c.k);start()}
 function step(d){if(!S.view.length)return toast("No channels in list");
  let i=S.cur?S.view.findIndex(c=>c.k===S.cur.k):-1;i=i<0?(d>0?0:S.view.length-1):(i+d+S.view.length)%S.view.length;
  const c=S.view[i];play(c);const r=$("list").querySelector(`[data-k="${CSS.escape(c.k)}"]`);if(r)r.scrollIntoView({block:"center",behavior:"smooth"})}
-const toggle=()=>{showC();if(!S.cur)return toast("Pick a channel first");if(!v.src&&!hls)return start();v.paused?attemptPlay(S.g):v.pause()};
+function playDefault(){const c=S.map.get(rec[0])||S.view[0];if(c)play(c);else toast("No channels in list")}
+const toggle=()=>{showC();if(!S.cur)return playDefault();if(!v.src&&!hls)return start();v.paused?attemptPlay(S.g):v.pause()};
 function fav(k){if(!k)return;const was=favs.has(k);if(was)favs.delete(k);else favs.add(k);ls.set("fav",[...favs]);
  apply();if(S.cur&&S.cur.k===k)meta();toast(was?"Removed from saved":"Saved channel")}
 
@@ -224,10 +278,14 @@ const sv=p=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${p}"/></svg>`
 const I={play:sv("M8 5v14l11-7z"),pause:sv("M6 5h4v14H6zM14 5h4v14h-4z"),prev:sv("M6 6h2v12H6zM9.5 12 18 18V6z"),next:sv("M16 6h2v12h-2zM6 18l8.5-6L6 6z"),vol:sv("M3 9v6h4l5 5V4L7 9zM16.5 12A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"),mute:sv("M3 9v6h4l5 5V4L7 9zM17 10.4 15.6 9l-1.6 1.6L12.4 9 11 10.4l1.6 1.6L11 13.6l1.4 1.4 1.6-1.6 1.6 1.6 1.4-1.4-1.6-1.6z"),pip:sv("M19 7h-8v6h8zm4-4H1v18h22zm-2 16.01H3V4.98h18z"),fs:sv("M7 14H5v5h5v-2H7zm-2-4h2V7h3V5H5zm12 7h-3v2h5v-5h-2zM14 5v2h3v3h2V5z")};
 $("pv").innerHTML=I.prev;$("pp").innerHTML=I.play;$("nx").innerHTML=I.next;$("mu").innerHTML=I.vol;$("pip").innerHTML=I.pip;$("fs").innerHTML=I.fs;
 const fr=$("frame");let ht;
-const showC=()=>{fr.classList.add("show");clearTimeout(ht);ht=setTimeout(()=>fr.classList.remove("show"),3000)};
+const showC=()=>{fr.classList.add("show");clearTimeout(ht);ht=setTimeout(()=>fr.classList.remove("show"),4000)};
 document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement){try{screen.orientation.unlock()}catch{}}});
-v.addEventListener("playing",()=>{clearTimeout(wd);spin(false);badge("LIVE",true);$("ph").style.display="none"});
-v.addEventListener("waiting",()=>{if(S.cur&&!v.paused)spin(true)});
+v.addEventListener("playing",()=>{showC();hintDone(5000);clearTimeout(wd);clearTimeout(stallT);spin(false);badge("LIVE",true);$("ph").style.display="none";
+ S.played=true;const c=S.cur;if(c&&c.s[S.si]&&GOOD[c.k]!==c.s[S.si].u){GOOD[c.k]=c.s[S.si].u;const ks=Object.keys(GOOD);if(ks.length>150)delete GOOD[ks[0]];ls.set("good",GOOD)}
+ clearTimeout(rcT);rcT=setTimeout(()=>{rcn=0},30000)});
+v.addEventListener("waiting",()=>{if(S.cur&&!v.paused){spin(true);if(S.played){clearTimeout(stallT);const g=S.g;stallT=setTimeout(()=>stall(g),12000)}}});
+v.addEventListener("pause",()=>clearTimeout(stallT));
+window.addEventListener("online",()=>{if(hls&&S.cur&&!v.paused)try{hls.startLoad()}catch{}});
 v.addEventListener("play",()=>$("pp").innerHTML=I.pause);v.addEventListener("pause",()=>$("pp").innerHTML=I.play);
 v.addEventListener("error",()=>{if(S.native)fail(S.g)});
 v.addEventListener("volumechange",()=>$("mu").innerHTML=v.muted?I.mute:I.vol);
@@ -240,16 +298,22 @@ $("pip").onclick=()=>document.pictureInPictureElement?document.exitPictureInPict
 $("alt").onclick=()=>{if(S.cur){S.si=(S.si+1)%S.cur.s.length;start()}};
 $("fv").onclick=()=>S.cur&&fav(S.cur.k);
 $("refresh").onclick=()=>load(true);
-let dt;$("q").addEventListener("input",()=>{clearTimeout(dt);dt=setTimeout(apply,150)});
+let dt;
+$("q").addEventListener("input",()=>{
+  clearTimeout(dt);
+  dt=setTimeout(apply,80);
+});
 $("chips").onclick=e=>{const b=e.target.closest("[data-c]");if(!b)return;S.cat=b.dataset.c;drawFilters();apply()};
 $("tabs").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;S.tab=b.dataset.t;syncTabs();apply()};
 $("cc").onchange=e=>{S.cc=e.target.value;apply()};$("so").onchange=e=>{S.so=e.target.value;apply()};
+$("fb").onclick=()=>{const p=$("fpan"),o=p.hidden;p.hidden=!o;$("fb").setAttribute("aria-expanded",o)};
 $("rs").onclick=resetF;$("ad").onclick=()=>{S.adult=!S.adult;drawFilters();apply()};
 $("empty").onclick=e=>{if(e.target.id==="rs2")resetF();if(e.target.id==="retry")load(true)};
+$("fatal").onclick=e=>{if(e.target.id==="retry")load(true)};
 $("list").onkeydown=e=>{if(e.target.classList.contains("row")&&(e.key==="Enter"||e.key===" ")){e.preventDefault();play(S.map.get(e.target.dataset.k))}};
 $("list").onclick=e=>{const f=e.target.closest("[data-f]");if(f)return fav(f.dataset.f);
  const r=e.target.closest(".row");if(r)play(S.map.get(r.dataset.k))};
-$("ph").onclick=e=>{if(S.cur){e.stopPropagation();if(v.currentSrc||v.src||hls){attemptPlay(S.g)}else start()}};
+$("ph").onclick=e=>{if(!S.cur){e.stopPropagation();return playDefault()}if(S.cur){e.stopPropagation();if(v.currentSrc||v.src||hls){attemptPlay(S.g)}else start()}};
 let tx=0,ty=0;
 $("frame").addEventListener("touchstart",e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
 $("frame").addEventListener("touchend",e=>{const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
@@ -260,7 +324,15 @@ document.addEventListener("keydown",e=>{const ae=document.activeElement;if(/INPU
  if(e.key==="ArrowRight")step(1);else if(e.key==="ArrowLeft")step(-1);else if(e.key===" "||(e.key==="Enter"&&ae.id==="frame")){e.preventDefault();toggle()}
  else if(e.key==="m")v.muted=!v.muted;else if(e.key==="f")$("fs").click();else if(e.key==="/"){e.preventDefault();$("q").focus()}});
 
+// ---------- onboarding hint ----------
+let hintT;
+function hintDone(delay=0){if(ls.get("hint",false)||$("hint").hidden)return;clearTimeout(hintT);hintT=setTimeout(()=>{$("hint").hidden=true;ls.set("hint",true)},delay)}
+if(!ls.get("hint",false)){$("hintT").textContent=matchMedia("(pointer:coarse)").matches?"Swipe left or right on the video to change channels":"Use ← → to change channels, / to search, f for fullscreen";$("hint").hidden=false}
+$("hintX").onclick=e=>{e.stopPropagation();$("hint").hidden=true;ls.set("hint",true)};
+$("hint").onclick=e=>e.stopPropagation();
+
 // ---------- boot ----------
+loadKannada();
 (async()=>{const c=await idb("get");
  if(c&&c.d&&c.d.length){cacheTime=c.t||0;ingest(c.d,c.t);
   const last=S.map.get(ls.get("last",""));if(last){S.cur=last;S.si=0;meta();$("phT").textContent=last.name;$("phS").textContent="Tap to resume";}
