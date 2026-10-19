@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-u16WQdltn8QuFgxAFyN3TDfsEcRAkKe/WtY0OhrEumw='; worker-src blob:; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; media-src 'self' https: http: blob:; connect-src 'self' https: http: blob:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-dMnAPI8w9yBV+vaiDXvIjfdNb4APJGGGikDG4fZuqrs='; worker-src blob:; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; media-src 'self' https: http: blob:; connect-src 'self' https: http: blob:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests">
 <title>Live TV Player Online | Fire TV</title>
 <meta
   name="description"
@@ -88,8 +88,8 @@ select{flex:1;min-width:0;height:40px;padding:0 10px;border-radius:12px;border:1
 #rs{color:#fff;text-decoration:underline;font-size:12px}
 .row{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid transparent;border-bottom-color:var(--l);border-radius:12px;cursor:pointer;content-visibility:auto;contain-intrinsic-size:64px}
 .row:hover{background:var(--p)}.row.on{background:var(--p2);border-color:#fff}
-.lg{position:relative;width:46px;height:46px;flex:none;border-radius:10px;background:var(--p2);border:1px solid var(--l);overflow:hidden;display:grid;place-items:center;font-weight:800;font-size:13px;color:var(--m)}
-.lg img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;padding:3px}
+.lgo{position:relative;width:46px;height:46px;flex:none;border-radius:10px;background:var(--p2);border:1px solid var(--l);overflow:hidden;display:grid;place-items:center;font-weight:800;font-size:13px;color:var(--m)}
+.lgo img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;padding:3px}
 .ci{flex:1;min-width:0}.ci b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .cd{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--m);white-space:nowrap;overflow:hidden}
 .pill{border:1px solid var(--l);border-radius:99px;padding:0 7px;font-size:11px}
@@ -149,6 +149,9 @@ select{flex:1;min-width:0;height:40px;padding:0 10px;border-radius:12px;border:1
 (()=>{"use strict";
 // Single source: the iptv-org/iptv repository (main playlist + its own mirrors)
 const SRC=["https://iptv-org.github.io/iptv/index.m3u","https://cdn.jsdelivr.net/gh/iptv-org/iptv@gh-pages/index.m3u","https://raw.githubusercontent.com/iptv-org/iptv/gh-pages/index.m3u"];
+const ANIM=["https://iptv-org.github.io/iptv/categories/animation.m3u","https://cdn.jsdelivr.net/gh/iptv-org/iptv@gh-pages/categories/animation.m3u","https://raw.githubusercontent.com/iptv-org/iptv/gh-pages/categories/animation.m3u"];
+const PLUTO=["https://nocords.xyz/pluto/playlist.m3u"];
+const PINS=["Animation","Pluto TV"]; // category pills pinned right after "All"
 const $=i=>document.getElementById(i),v=$("v"),blockHttp=location.protocol==="https:";
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,x){try{localStorage.setItem(k,JSON.stringify(x))}catch{}}};
 const idb=(m,x)=>new Promise(r=>{try{const q=indexedDB.open("firetv",1);q.onupgradeneeded=()=>q.result.createObjectStore("c");q.onerror=()=>r();q.onsuccess=()=>{const s=q.result.transaction("c",m==="get"?"readonly":"readwrite").objectStore("c"),o=m==="get"?s.get("cat"):s.put(x,"cat");o.onsuccess=()=>r(o.result);o.onerror=()=>r()}}catch{r()}});
@@ -168,7 +171,7 @@ const persist=()=>ls.set("f",{tab:S.tab,cat:S.cat,cc:S.cc,so:S.so,adult:S.adult}
 const at=(l,k)=>(new RegExp(k+'="([^"]*)"','i').exec(l)||[])[1]||"";
 async function parse(txt){const out=[];let m=null,n=0;
  for(const raw of txt.split(/\r?\n/)){if(++n%20000===0)await new Promise(r=>setTimeout(r));const l=raw.trim();if(!l)continue;
-  if(l.startsWith("#EXTINF")){const i=l.lastIndexOf(",");m={id:at(l,"tvg-id"),logo:at(l,"tvg-logo"),cat:at(l,"group-title"),t:i>=0?l.slice(i+1).trim():"",bad:false}}
+  if(l.startsWith("#EXTINF")){let i=l.lastIndexOf('",');i=i>=0?i+1:l.lastIndexOf(",");m={id:at(l,"tvg-id")||(at(l,"channel-id")?"ch:"+at(l,"channel-id"):""),logo:at(l,"tvg-logo"),cat:at(l,"group-title"),t:i>=0?l.slice(i+1).trim():"",bad:false}}
   else if(m&&/^#EXTVLCOPT:http-(referrer|user-agent)/i.test(l))m.bad=true; // needs custom headers; browsers can't send them
   else if(l[0]!=="#"&&m){try{const u=new URL(l);if(!m.bad&&["http:","https:"].includes(u.protocol)&&!u.username&&!u.password&&!(blockHttp&&u.protocol==="http:"))out.push({...m,u:u.href})}catch{}m=null}}
  return out}
@@ -199,9 +202,9 @@ async function loadKannada(){
 
 // ---------- list ----------
 function row(c){const f=favs.has(c.k),on=S.cur&&S.cur.k===c.k;
-  return `<div class="row${on?" on":""}" data-k="${esc(c.k)}" role="button" tabindex="0"><div class="lg"><span>${esc(ini(c.name))}</span>${c.logo?`<img loading="lazy" src="${esc(c.logo)}" alt="">`:""}</div><div class="ci"><b>${esc(c.name)}</b><div class="cd"><span>${esc(c.cats[0]||"Other")} • ${flag(c.cc)} ${esc(c.cn)}</span>${c.q>=720?`<span class="hd" title="${c.q}p">HD</span>`:""}</div></div><button class="fv${f?" on":""}" data-f="${esc(c.k)}" aria-pressed="${f}" aria-label="Save ${esc(c.name)}">${f?"★":"☆"}</button></div>`}
+  return `<div class="row${on?" on":""}" data-k="${esc(c.k)}" role="button" tabindex="0"><div class="lgo"><span>${esc(ini(c.name))}</span>${c.logo?`<img loading="lazy" src="${esc(c.logo)}" alt="">`:""}</div><div class="ci"><b>${esc(c.name)}</b><div class="cd"><span>${esc(c.cats[0]||"Other")} • ${flag(c.cc)} ${esc(c.cn)}</span>${c.q>=720?`<span class="hd" title="${c.q}p">HD</span>`:""}</div></div><button class="fv${f?" on":""}" data-f="${esc(c.k)}" aria-pressed="${f}" aria-label="Save ${esc(c.name)}">${f?"★":"☆"}</button></div>`}
 const io=new IntersectionObserver(e=>{if(e[0].isIntersecting)more()},{rootMargin:"600px"});
-$("list").addEventListener("error",e=>{if(e.target instanceof HTMLImageElement&&e.target.closest(".lg"))e.target.remove()},true);
+$("list").addEventListener("error",e=>{if(e.target instanceof HTMLImageElement&&e.target.closest(".lgo"))e.target.remove()},true);
 function more(){if(S.n>=S.view.length)return;const a=S.view.slice(S.n,S.n+60);S.n+=a.length;$("list").insertAdjacentHTML("beforeend",a.map(row).join(""));io.unobserve($("sent"));io.observe($("sent"))}
 function apply(){const q=norm($("q").value);
  let a=S.all.filter(c=>!(S.tab==="fav"&&!favs.has(c.k))&&!(S.tab==="rec"&&!rec.includes(c.k))&&!(S.cat&&!c.cats.includes(S.cat))&&!(S.cc&&c.cc!==S.cc)&&!(q&&!c.n2.includes(q))&&!(c.adult&&!S.adult));
@@ -219,7 +222,7 @@ function updFb(){const n=(S.cc?1:0)+(S.so!=="az"?1:0)+(S.adult?1:0);const b=$("f
 const syncTabs=()=>{document.querySelectorAll("#tabs button").forEach(b=>{const on=b.dataset.t===S.tab;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});const a=$("ad");a.textContent=S.adult?"Adult: shown":"Adult: hidden";a.setAttribute("aria-pressed",S.adult);a.classList.toggle("on",S.adult)};
 function drawFilters(){const cats=new Map(),ccs=new Map();
  for(const c of S.all){if(c.adult&&!S.adult)continue;for(const g of c.cats)cats.set(g,(cats.get(g)||0)+1);ccs.set(c.cc,(ccs.get(c.cc)||0)+1)}
- if(S.cat&&!cats.has(S.cat))S.cat="";const top=[...cats].sort((a,b)=>b[1]-a[1]).slice(0,30);
+ if(S.cat&&!cats.has(S.cat))S.cat="";const top=[...cats].sort((a,b)=>b[1]-a[1]).filter(([g])=>!PINS.includes(g)).slice(0,30);for(const p of PINS.slice().reverse())if(cats.has(p))top.unshift([p,cats.get(p)]);
  $("chips").innerHTML=`<button class="chip${S.cat?"":" on"}" aria-pressed="${!S.cat}" data-c="">All</button>`+top.map(([g,n])=>`<button class="chip${S.cat===g?" on":""}" aria-pressed="${S.cat===g}" data-c="${esc(g)}">${esc(g)} · ${n}</button>`).join("");
  if(S.cc&&!ccs.has(S.cc))S.cc="";
  $("cc").innerHTML=`<option value="">All countries</option>`+[...ccs].sort((a,b)=>cname(a[0]).localeCompare(cname(b[0]))).map(([c,n])=>`<option value="${c}">${flag(c)} ${esc(cname(c))} (${n})</option>`).join("");
@@ -232,14 +235,25 @@ function ingest(arr,t){for(const c of arr)c.adult=c.cats.some(g=>/^(xxx|adult)$/
  if(!saved&&!S.cc){const r=(/-([A-Za-z]{2})$/.exec(navigator.language)||[])[1];if(r&&arr.some(c=>c.cc===r.toUpperCase()))S.cc=r.toUpperCase()}
  drawFilters();apply();
  $("fatal").hidden=true}
+async function fetchExtra(urls,force,tag){
+ for(const u of urls){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),20000);
+  try{const r=await fetch(u,{signal:ac.signal,cache:force?"reload":"default"});if(!r.ok)throw 0;const b=await r.text();if(!b.includes("#EXTM3U"))throw 0;clearTimeout(t);
+   return(await parse(b)).map(e=>({...e,cat:e.cat?(e.cat.split(";").includes(tag)?e.cat:e.cat+";"+tag):tag}))}catch{clearTimeout(t)}}
+ return[]}
+const commit=arr=>{const ts=Date.now();cacheTime=ts;idb("put",{t:ts,d:arr});ingest(arr,ts)};
 async function load(force){
  const token=++loadToken;if(!S.all.length){$("list").innerHTML='<div class="sk"></div>'.repeat(7);$("empty").hidden=true;}$("fatal").hidden=true;if(S.all.length&&force)toast("Refreshing channels…");
- let err="";
+ let err="";const extraP=Promise.all([fetchExtra(ANIM,force,"Animation"),fetchExtra(PLUTO,force,"Pluto TV")]); // optional, fetched in parallel
  for(const u of SRC){if(token!==loadToken)return;const ac=new AbortController(),t=setTimeout(()=>ac.abort(),45000);
   try{const r=await fetch(u,{signal:ac.signal,cache:force?"reload":"default"});if(!r.ok)throw Error("HTTP "+r.status);
    const b=await r.text();if(!b.includes("#EXTM3U"))throw Error("Invalid playlist");
-   const arr=build(await parse(b));if(!arr.length)throw Error("Empty playlist");
-   clearTimeout(t);if(token!==loadToken)return;const ts=Date.now();cacheTime=ts;idb("put",{t:ts,d:arr});ingest(arr,ts);if(force)toast("Channels refreshed");return}
+   const base=await parse(b),arr=build(base);if(!arr.length)throw Error("Empty playlist");
+   clearTimeout(t);if(token!==loadToken)return;commit(arr);if(force)toast("Channels refreshed");
+   // optional sources are merged in afterwards, so a slow or blocked one can never hold the list back
+   extraP.then(ex=>{if(token!==loadToken)return;
+    if(!ex[1].length)toast("Pluto TV list couldn't be loaded");
+    if(ex.some(x=>x.length))commit(build(base.concat(...ex)))});
+   return}
   catch(e){err=e.message;clearTimeout(t)}}
  if(token!==loadToken)return;if(S.all.length){ingest(S.all,cacheTime);toast("Offline — showing saved list");return}
  $("list").innerHTML="";const ft=$("fatal");ft.hidden=false;
@@ -299,7 +313,8 @@ function step(d){if(!S.view.length)return toast("No channels in list");
 function playDefault(){const c=S.map.get(rec[0])||S.view[0];if(c)play(c);else toast("No channels in list")}
 const toggle=()=>{showC();if(!S.cur)return playDefault();if(!v.src&&!hls)return start();v.paused?attemptPlay(S.g):v.pause()};
 function fav(k){if(!k)return;const was=favs.has(k);if(was)favs.delete(k);else favs.add(k);ls.set("fav",[...favs]);
- apply();if(S.cur&&S.cur.k===k)meta();toast(was?"Removed from saved":"Saved channel")}
+ if(S.tab==="fav")apply();else{document.querySelectorAll(`[data-f="${CSS.escape(k)}"]`).forEach(b=>{b.classList.toggle("on",!was);b.textContent=was?"☆":"★";b.setAttribute("aria-pressed",!was)});$("fc").textContent=favs.size||""}
+ if(S.cur&&S.cur.k===k)meta();toast(was?"Removed from saved":"Saved channel")}
 
 
 // ---------- events ----------
@@ -332,7 +347,7 @@ $("q").addEventListener("input",()=>{
   clearTimeout(dt);
   dt=setTimeout(apply,80);
 });
-$("chips").onclick=e=>{const b=e.target.closest("[data-c]");if(!b)return;S.cat=b.dataset.c;drawFilters();apply()};
+$("chips").onclick=e=>{const b=e.target.closest("[data-c]");if(!b)return;S.cat=b.dataset.c;if(PINS.includes(S.cat)&&S.cc)S.cc=""; /* country filter must not hide pinned sources */drawFilters();apply()};
 $("tabs").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;S.tab=b.dataset.t;syncTabs();apply()};
 $("cc").onchange=e=>{S.cc=e.target.value;apply()};$("so").onchange=e=>{S.so=e.target.value;apply()};
 $("fb").onclick=()=>{const p=$("fpan"),o=p.hidden;p.hidden=!o;$("fb").setAttribute("aria-expanded",o)};
