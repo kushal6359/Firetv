@@ -148,7 +148,7 @@ select{flex:1;min-width:0;height:40px;padding:0 10px;border-radius:12px;border:1
 <script>
 (()=>{"use strict";
 // Single source: the iptv-org/iptv repository (main playlist + its own mirrors)
-const SRC=["https://iptv-org.github.io/iptv/index.m3u","https://iptv-org.github.io/iptv/categories/animation.m3u","https://cdn.jsdelivr.net/gh/iptv-org/iptv@gh-pages/index.m3u","https://raw.githubusercontent.com/iptv-org/iptv/gh-pages/index.m3u"];
+const SRC=["https://iptv-org.github.io/iptv/index.m3u","https://cdn.jsdelivr.net/gh/iptv-org/iptv@gh-pages/index.m3u","https://raw.githubusercontent.com/iptv-org/iptv/gh-pages/index.m3u"];
 const $=i=>document.getElementById(i),v=$("v"),blockHttp=location.protocol==="https:";
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,x){try{localStorage.setItem(k,JSON.stringify(x))}catch{}}};
 const idb=(m,x)=>new Promise(r=>{try{const q=indexedDB.open("firetv",1);q.onupgradeneeded=()=>q.result.createObjectStore("c");q.onerror=()=>r();q.onsuccess=()=>{const s=q.result.transaction("c",m==="get"?"readonly":"readwrite").objectStore("c"),o=m==="get"?s.get("cat"):s.put(x,"cat");o.onsuccess=()=>r(o.result);o.onerror=()=>r()}}catch{r()}});
