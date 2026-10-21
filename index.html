@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-dMnAPI8w9yBV+vaiDXvIjfdNb4APJGGGikDG4fZuqrs='; worker-src blob:; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; media-src 'self' https: http: blob:; connect-src 'self' https: http: blob:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-P5mNjGlJJ/1TvJh3bVZAfE1GvEkXZh6yDpPATBzpgFk='; worker-src blob:; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; media-src 'self' https: http: blob:; connect-src 'self' https: http: blob:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests">
 <title>Live TV Player Online | Fire TV</title>
 <meta
   name="description"
@@ -150,8 +150,7 @@ select{flex:1;min-width:0;height:40px;padding:0 10px;border-radius:12px;border:1
 // Single source: the iptv-org/iptv repository (main playlist + its own mirrors)
 const SRC=["https://iptv-org.github.io/iptv/index.m3u","https://cdn.jsdelivr.net/gh/iptv-org/iptv@gh-pages/index.m3u","https://raw.githubusercontent.com/iptv-org/iptv/gh-pages/index.m3u"];
 const ANIM=["https://iptv-org.github.io/iptv/categories/animation.m3u","https://cdn.jsdelivr.net/gh/iptv-org/iptv@gh-pages/categories/animation.m3u","https://raw.githubusercontent.com/iptv-org/iptv/gh-pages/categories/animation.m3u"];
-const PLUTO=["https://nocords.xyz/pluto/playlist.m3u"];
-const PINS=["Animation","Pluto TV"]; // category pills pinned right after "All"
+const PINS=["Animation"]; // category pills pinned right after "All"
 const $=i=>document.getElementById(i),v=$("v"),blockHttp=location.protocol==="https:";
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,x){try{localStorage.setItem(k,JSON.stringify(x))}catch{}}};
 const idb=(m,x)=>new Promise(r=>{try{const q=indexedDB.open("firetv",1);q.onupgradeneeded=()=>q.result.createObjectStore("c");q.onerror=()=>r();q.onsuccess=()=>{const s=q.result.transaction("c",m==="get"?"readonly":"readwrite").objectStore("c"),o=m==="get"?s.get("cat"):s.put(x,"cat");o.onsuccess=()=>r(o.result);o.onerror=()=>r()}}catch{r()}});
@@ -243,7 +242,7 @@ async function fetchExtra(urls,force,tag){
 const commit=arr=>{const ts=Date.now();cacheTime=ts;idb("put",{t:ts,d:arr});ingest(arr,ts)};
 async function load(force){
  const token=++loadToken;if(!S.all.length){$("list").innerHTML='<div class="sk"></div>'.repeat(7);$("empty").hidden=true;}$("fatal").hidden=true;if(S.all.length&&force)toast("Refreshing channels…");
- let err="";const extraP=Promise.all([fetchExtra(ANIM,force,"Animation"),fetchExtra(PLUTO,force,"Pluto TV")]); // optional, fetched in parallel
+ let err="";const extraP=fetchExtra(ANIM,force,"Animation"); // optional, fetched in parallel
  for(const u of SRC){if(token!==loadToken)return;const ac=new AbortController(),t=setTimeout(()=>ac.abort(),45000);
   try{const r=await fetch(u,{signal:ac.signal,cache:force?"reload":"default"});if(!r.ok)throw Error("HTTP "+r.status);
    const b=await r.text();if(!b.includes("#EXTM3U"))throw Error("Invalid playlist");
@@ -251,8 +250,7 @@ async function load(force){
    clearTimeout(t);if(token!==loadToken)return;commit(arr);if(force)toast("Channels refreshed");
    // optional sources are merged in afterwards, so a slow or blocked one can never hold the list back
    extraP.then(ex=>{if(token!==loadToken)return;
-    if(!ex[1].length)toast("Pluto TV list couldn't be loaded");
-    if(ex.some(x=>x.length))commit(build(base.concat(...ex)))});
+    if(ex.length)commit(build(base.concat(ex)))});
    return}
   catch(e){err=e.message;clearTimeout(t)}}
  if(token!==loadToken)return;if(S.all.length){ingest(S.all,cacheTime);toast("Offline — showing saved list");return}
